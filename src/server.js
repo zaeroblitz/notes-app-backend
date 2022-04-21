@@ -1,6 +1,7 @@
+// mengimpor dotenv dan menjalankan konfigurasinya
 require('dotenv').config();
 
-const Hapi = require("@hapi/hapi");
+const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
 
 // notes
@@ -11,18 +12,24 @@ const NotesValidator = require('./validator/notes');
 // users
 const users = require('./api/users');
 const UsersService = require('./services/postgres/UsersService');
-const UsersValidator = require('./validator/users/index');
+const UsersValidator = require('./validator/users');
 
 // authentications
-const auths = require('./api/auths');
-const AuthsService = require('./services/postgres/AuthsService');
+const authentications = require('./api/authentications');
+const AuthenticationsService = require('./services/postgres/AuthenticationsService');
 const TokenManager = require('./tokenize/TokenManager');
-const AuthsValidator = require('./validator/authentications/index');
+const AuthenticationsValidator = require('./validator/authentications');
+
+// collaborations
+const collaborations = require('./api/collaborations');
+const CollaborationsService = require('./services/postgres/CollaborationsService');
+const CollaborationsValidator = require('./validator/collaborations');
 
 const init = async () => {
-  const notesService = new NotesService();
+  const collaborationsService = new CollaborationsService();
+  const notesService = new NotesService(collaborationsService);
   const usersService = new UsersService();
-  const authsService = new AuthsService();
+  const authenticationsService = new AuthenticationsService();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -32,7 +39,7 @@ const init = async () => {
         origin: ['*'],
       },
     },
-  });  
+  });
 
   // registrasi plugin eksternal
   await server.register([
@@ -40,7 +47,7 @@ const init = async () => {
       plugin: Jwt,
     },
   ]);
- 
+
   // mendefinisikan strategy autentikasi jwt
   server.auth.strategy('notesapp_jwt', 'jwt', {
     keys: process.env.ACCESS_TOKEN_KEY,
@@ -64,47 +71,36 @@ const init = async () => {
       options: {
         service: notesService,
         validator: NotesValidator,
-      }
+      },
     },
     {
       plugin: users,
       options: {
         service: usersService,
         validator: UsersValidator,
-      }
+      },
     },
     {
-      plugin: auths,
+      plugin: authentications,
       options: {
-        authsService,
+        authenticationsService,
         usersService,
         tokenManager: TokenManager,
-        validator: AuthsValidator,
-      }
+        validator: AuthenticationsValidator,
+      },
+    },
+    {
+      plugin: collaborations,
+      options: {
+        collaborationsService,
+        notesService,
+        validator: CollaborationsValidator,
+      },
     },
   ]);
 
   await server.start();
   console.log(`Server berjalan pada ${server.info.uri}`);
-}
-
-init();
-
-/* const init = async () => {
-  const server = Hapi.server({
-    port: 5000,
-    host: process.env.NODE_ENV !== "production" ? "localhost" : "0.0.0.0",
-    routes: {
-      cors: {
-        origin: ["*"],
-      },
-    },
-  });
-
-  server.route(routes);
-
-  await server.start();
-  console.log(`Server berjalan pada ${server.info.uri}`);
 };
 
-init(); */
+init();

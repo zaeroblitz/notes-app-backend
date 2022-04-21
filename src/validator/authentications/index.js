@@ -1,34 +1,29 @@
 const {
-    PostAuthPayloadSchema,
-    PutAuthPayloadSchema,
-    DeleteAuthPayloadSchema
+  PostAuthenticationPayloadSchema,
+  PutAuthenticationPayloadSchema,
+  DeleteAuthenticationPayloadSchema,
 } = require('./schema');
 const InvariantError = require('../../exceptions/InvariantError');
 
-const AuthValidator = {
-    validatePostAuthPayload: (payload) => {
-        const validationResult = PostAuthPayloadSchema.validate(payload);
-
-        if (validationResult.error) {
-            throw new InvariantError(validationResult.error.message);
-        }
-    },
-
-    validatePutAuthPayload: (payload) => {
-        const validationResult = PutAuthPayloadSchema.validate(payload);
-
-        if (validationResult.error) {
-            throw new InvariantError(validationResult.error.message);
-        }
-    },
-
-    validateDeleteAuthPayload: (payload) => {
-        const validationResult = DeleteAuthPayloadSchema.validate(payload);
-
-        if (validationResult.error) {
-            throw new InvariantError(validationResult.error.message);
-        }
+const AuthenticationsValidator = {
+  validatePostAuthenticationPayload: (payload) => {
+    const validationResult = PostAuthenticationPayloadSchema.validate(payload);
+    if (validationResult.error) {
+      throw new InvariantError(validationResult.error.message);
     }
+  },
+  validatePutAuthenticationPayload: (payload) => {
+    const validationResult = PutAuthenticationPayloadSchema.validate(payload);
+    if (validationResult.error) {
+      throw new InvariantError(validationResult.error.message);
+    }
+  },
+  validateDeleteAuthenticationPayload: (payload) => {
+    const validationResult = DeleteAuthenticationPayloadSchema.validate(payload);
+    if (validationResult.error) {
+      throw new InvariantError(validationResult.error.message);
+    }
+  },
 };
 
-module.exports = AuthValidator;
+module.exports = AuthenticationsValidator;
